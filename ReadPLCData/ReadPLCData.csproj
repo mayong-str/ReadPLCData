@@ -73,8 +73,6 @@
     </Compile>
     <Compile Include="GlobalLog.cs" />
     <Compile Include="OperateDataBase.cs" />
-    <Compile Include="PLCAddress.cs" />
-    <Compile Include="PLCAddressValue.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility.cs" />
