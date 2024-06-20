@@ -164,7 +164,10 @@ namespace ReadPLCData
                 MessageBox.Show("开始读取失败：" + operateResult.Message, "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
-        private readonly Trigger.UpTrigger tD100000 = new Trigger.UpTrigger(); //上升沿
+        /// <summary>
+        /// 上升沿
+        /// </summary>
+        private readonly Trigger.UpTrigger tD100000 = new Trigger.UpTrigger(); 
         private readonly Trigger.UpTrigger tD100002 = new Trigger.UpTrigger();
 
         private void Test()
