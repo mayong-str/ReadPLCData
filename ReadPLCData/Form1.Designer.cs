@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
             this.btn_Start = new System.Windows.Forms.Button();
             this.btn_Pause = new System.Windows.Forms.Button();
             this.btn_Contiue = new System.Windows.Forms.Button();
@@ -36,6 +37,7 @@
             this.dGV = new System.Windows.Forms.DataGridView();
             this.Btn_Edit = new System.Windows.Forms.Button();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.lab_PLC_Status = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dGV)).BeginInit();
             this.SuspendLayout();
             // 
@@ -85,6 +87,14 @@
             this.dGV.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
             this.dGV.BackgroundColor = System.Drawing.Color.White;
             this.dGV.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dGV.DefaultCellStyle = dataGridViewCellStyle7;
             this.dGV.Location = new System.Drawing.Point(12, 12);
             this.dGV.Name = "dGV";
             this.dGV.RowHeadersWidth = 51;
@@ -107,11 +117,23 @@
             this.timer1.Interval = 1000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // lab_PLC_Status
+            // 
+            this.lab_PLC_Status.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lab_PLC_Status.ForeColor = System.Drawing.SystemColors.Control;
+            this.lab_PLC_Status.Location = new System.Drawing.Point(1127, 735);
+            this.lab_PLC_Status.Name = "lab_PLC_Status";
+            this.lab_PLC_Status.Size = new System.Drawing.Size(110, 26);
+            this.lab_PLC_Status.TabIndex = 14;
+            this.lab_PLC_Status.Text = "PLC_Status";
+            this.lab_PLC_Status.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1374, 788);
+            this.Controls.Add(this.lab_PLC_Status);
             this.Controls.Add(this.Btn_Edit);
             this.Controls.Add(this.dGV);
             this.Controls.Add(this.btn_Stop);
@@ -136,6 +158,7 @@
         private System.Windows.Forms.DataGridView dGV;
         private System.Windows.Forms.Button Btn_Edit;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Label lab_PLC_Status;
     }
 }
 

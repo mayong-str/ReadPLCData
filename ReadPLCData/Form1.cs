@@ -4,6 +4,7 @@ using HslCommunication.Profinet.Melsec;
 using System;
 using System.Configuration;
 using System.Data;
+using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -139,7 +140,7 @@ namespace ReadPLCData
             ts = new CancellationTokenSource();
             ManualReset = new ManualResetEvent(true);
             melsec_net = new MelsecMcNet(Ip, Convert.ToInt32(Port));
-            OperateResult operateResult = melsec_net.ConnectServer();
+            OperateResult operateResult = melsec_net.ConnectServer(); 
             if (operateResult.IsSuccess)
             {
                 Task task = new Task(Test, ts.Token);
@@ -170,94 +171,120 @@ namespace ReadPLCData
         private readonly Trigger.UpTrigger tD100000 = new Trigger.UpTrigger(); 
         private readonly Trigger.UpTrigger tD100002 = new Trigger.UpTrigger();
 
+        Action<Label, Color> action = new Action<Label, Color>(ShowLabelBackColor);
+
+        /// <summary>
+        /// 显示控件Label的背景颜色
+        /// </summary>
+        /// <param name="label"></param>
+        /// <param name="color"></param>
+        private static void ShowLabelBackColor(Label label, Color color)
+        {
+            label.BackColor = color;
+        }
+
+        /// <summary>
+        /// 读PLC数据 2024-06-11 17:00:00
+        /// </summary>
+        /// <returns></returns>
+        public bool ReadRandom()
+        {
+            OperateResult<byte[]> operate1 = melsec_net.ReadRandom(dataAddress.Work_duration_address);
+            OperateResult<byte[]> operate2 = melsec_net.ReadRandom(dataAddress.Hold_duration_address);
+            OperateResult<byte[]> operate3 = melsec_net.ReadRandom(dataAddress.Transport_duration_address);
+            OperateResult<byte[]> operate4 = melsec_net.ReadRandom(dataAddress.Thd_product_id_address);
+            OperateResult<byte[]> operate5 = melsec_net.ReadRandom(dataAddress.Device_id_address);
+            OperateResult<byte[]> operate6 = melsec_net.ReadRandom(dataAddress.Work_duration_address_s);
+            OperateResult<byte[]> operate7 = melsec_net.ReadRandom(dataAddress.Hold_duration_address_s);
+            OperateResult<byte[]> operate8 = melsec_net.ReadRandom(dataAddress.Transport_duration_address_s);
+            if (operate1.IsSuccess)
+            {
+                for (int i = 0; i < 40; i += 2)
+                {
+                    dataValue.Work_duration[i / 2] = melsec_net.ByteTransform.TransInt16(operate1.Content, i);
+                    dataValue.Hold_duration[i / 2] = melsec_net.ByteTransform.TransInt16(operate2.Content, i);
+                    dataValue.Transport_duration[i / 2] = melsec_net.ByteTransform.TransInt16(operate3.Content, i);
+                    dataValue.Thd_product_id[i / 2] = melsec_net.ByteTransform.TransInt16(operate4.Content, i);
+                    dataValue.Device_id[i / 2] = melsec_net.ByteTransform.TransInt16(operate5.Content, i);
+                    dataValue.Work_duration_s[i / 2] = melsec_net.ByteTransform.TransInt16(operate6.Content, i);
+                    dataValue.Hold_duration_s[i / 2] = melsec_net.ByteTransform.TransInt16(operate7.Content, i);
+                    dataValue.Transport_duration_s[i / 2] = melsec_net.ByteTransform.TransInt16(operate8.Content, i);
+                }
+
+                this.BeginInvoke(action, lab_PLC_Status, Color.Green);
+                return true;
+            }
+            else
+            {
+                this.BeginInvoke(action, lab_PLC_Status, Color.Red);
+                GlobalLog.WriteInfoLog("melsec_net.ReadRandom：" + "ErrorCode:" + operate1.ErrorCode + " " + ":Message：" + operate1.Message);
+                return true;
+            } 
+        }
+
+
         private void Test()
         {
             while (!ts.Token.IsCancellationRequested)
             {
                 ManualReset.WaitOne(); //阻塞当前线程
 
-                #region //读PLC数据 2024-06-11 17:00:00
+                bool plcStatus = ReadRandom();
 
-                OperateResult<byte[]> operate1 = melsec_net.ReadRandom(dataAddress.Work_duration_address);
-                OperateResult<byte[]> operate2 = melsec_net.ReadRandom(dataAddress.Hold_duration_address);
-                OperateResult<byte[]> operate3 = melsec_net.ReadRandom(dataAddress.Transport_duration_address);
-                OperateResult<byte[]> operate4 = melsec_net.ReadRandom(dataAddress.Thd_product_id_address);
-                OperateResult<byte[]> operate5 = melsec_net.ReadRandom(dataAddress.Device_id_address);
-                OperateResult<byte[]> operate6 = melsec_net.ReadRandom(dataAddress.Work_duration_address_s);
-                OperateResult<byte[]> operate7 = melsec_net.ReadRandom(dataAddress.Hold_duration_address_s);
-                OperateResult<byte[]> operate8 = melsec_net.ReadRandom(dataAddress.Transport_duration_address_s);
-                if (operate1.IsSuccess)
+                if(plcStatus) 
                 {
-                    for (int i = 0; i < 40; i += 2)
+                    #region //阶段性上传数据
+
+                    Int16 D10000 = melsec_net.ReadInt16(address_D10000).Content; //读触发位 D10000
+                    tD100000.Now = Convert.ToBoolean(D10000);
+                    if (tD100000.OutPut == true)
                     {
-                        dataValue.Work_duration[i / 2] = melsec_net.ByteTransform.TransInt16(operate1.Content, i);
-                        dataValue.Hold_duration[i / 2] = melsec_net.ByteTransform.TransInt16(operate2.Content, i);
-                        dataValue.Transport_duration[i / 2] = melsec_net.ByteTransform.TransInt16(operate3.Content, i);
-                        dataValue.Thd_product_id[i / 2] = melsec_net.ByteTransform.TransInt16(operate4.Content, i);
-                        dataValue.Device_id[i / 2] = melsec_net.ByteTransform.TransInt16(operate5.Content, i);
-                        dataValue.Work_duration_s[i / 2] = melsec_net.ByteTransform.TransInt16(operate6.Content, i);
-                        dataValue.Hold_duration_s[i / 2] = melsec_net.ByteTransform.TransInt16(operate7.Content, i);
-                        dataValue.Transport_duration_s[i / 2] = melsec_net.ByteTransform.TransInt16(operate8.Content, i);
+                        logNet.WriteInfo("tD100000.OutPut：" + tD100000.OutPut);
+
+                        #region //上传数据
+
+                        //int number = DataBaseHandle.Select(); //获取最新Id
+                        //DataBaseHandle.Insert(work_duration, hold_duration, transport_duration, thd_product_id, device_id, number, thd_product_kind);
+
+                        #endregion //上传数据
+
+                        #region //累积工时 2024-06-11 17:00:00
+
+                        short thd_product_kind = melsec_net.ReadInt16(address_D31).Content;  //D31 //产品品类
+                        DataBaseHandle.Insert_L(dataValue.Work_duration, dataValue.Hold_duration, dataValue.Transport_duration, dataValue.Thd_product_id, dataValue.Device_id, thd_product_kind);
+
+                        #endregion //累积工时 2024-06-11 17:00:00
+
+                        melsec_net.Write(address_D10001, Convert.ToInt16(1)); //置1
                     }
+                    else
+                    {
+                        melsec_net.Write(address_D10001, Convert.ToInt16(0));//复位
+                    }
+
+                    #endregion //阶段性上传数据
+
+                    #region //更新计划产量
+
+                    Int16 D10002 = melsec_net.ReadInt16(address_D10002).Content; //读触发位 D10002
+                    tD100002.Now = Convert.ToBoolean(D10002);
+                    if (tD100002.OutPut == true)
+                    {
+                        logNet.WriteInfo("tD100002.OutPut：" + tD100002.OutPut);
+                        short D4114 = melsec_net.ReadInt16(address_D4114).Content;
+                        DataBaseHandle.Update(D4114);
+
+                        melsec_net.Write(address_D10002, Convert.ToInt16(0)); //复位
+                    }
+
+                    #endregion //更新计划产量
+
+                    #region //实时上传 2024-06-11 17:00:00
+
+                    DataBaseHandle.Insert_S(dataValue.Work_duration_s, dataValue.Hold_duration_s, dataValue.Transport_duration_s);
+
+                    #endregion //实时上传 2024-06-11 17:00:00
                 }
-                else
-                {
-                    GlobalLog.WriteInfoLog("melsec_net.ReadRandom：" + "ErrorCode:" + operate1.ErrorCode + " " + ":Message：" + operate1.Message);
-                }
-                short thd_product_kind = melsec_net.ReadInt16(address_D31).Content;  //D31 //产品品类
-
-                #endregion //读PLC数据 2024-06-11 17:00:00
-
-                #region //阶段性上传数据
-
-                Int16 D10000 = melsec_net.ReadInt16(address_D10000).Content; //读触发位 D10000
-                tD100000.Now = Convert.ToBoolean(D10000);
-                if (tD100000.OutPut == true)
-                {
-                    logNet.WriteInfo("tD100000.OutPut：" + tD100000.OutPut);
-
-                    #region //上传数据
-
-                    //int number = DataBaseHandle.Select(); //获取最新Id
-                    //DataBaseHandle.Insert(work_duration, hold_duration, transport_duration, thd_product_id, device_id, number, thd_product_kind);
-
-                    #endregion //上传数据
-
-                    #region //累积工时 2024-06-11 17:00:00
-
-                    DataBaseHandle.Insert_L(dataValue.Work_duration, dataValue.Hold_duration, dataValue.Transport_duration, dataValue.Thd_product_id, dataValue.Device_id, thd_product_kind);
-
-                    #endregion //累积工时 2024-06-11 17:00:00
-
-                    melsec_net.Write(address_D10001, Convert.ToInt16(1)); //置1
-                }
-                else
-                {
-                    melsec_net.Write(address_D10001, Convert.ToInt16(0));//复位
-                }
-
-                #endregion //阶段性上传数据
-
-                #region //更新计划产量
-
-                Int16 D10002 = melsec_net.ReadInt16(address_D10002).Content; //读触发位 D10002
-                tD100002.Now = Convert.ToBoolean(D10002);
-                if (tD100002.OutPut == true)
-                {
-                    logNet.WriteInfo("tD100002.OutPut：" + tD100002.OutPut);
-                    short D4114 = melsec_net.ReadInt16(address_D4114).Content;
-                    DataBaseHandle.Update(D4114);
-
-                    melsec_net.Write(address_D10002, Convert.ToInt16(0)); //复位
-                }
-
-                #endregion //更新计划产量
-
-                #region //实时上传 2024-06-11 17:00:00
-
-                DataBaseHandle.Insert_S(dataValue.Work_duration_s, dataValue.Hold_duration_s, dataValue.Transport_duration_s);
-
-                #endregion //实时上传 2024-06-11 17:00:00
 
                 Thread.Sleep(1000);
             }
